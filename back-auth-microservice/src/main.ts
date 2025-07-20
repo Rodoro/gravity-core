@@ -15,9 +15,6 @@ async function bootstrap() {
         consumer: {
           groupId: 'auth-consumer',
         },
-        producer: {
-          createPartitioner: Partitioners.LegacyPartitioner,
-        },
       },
     }
   );
