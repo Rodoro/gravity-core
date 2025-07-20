@@ -1,0 +1,74 @@
+version: '3.7'
+
+services:
+  # db:
+  #   container_name: postgres-userauthservices
+  #   image: postgres:15.2
+  #   restart: always
+  #   env_file: .env
+  #   environment:
+  #     - POSTGRES_USER
+  #     - POSTGRES_PASSWORD
+  #   ports:
+  #     - '5433:5432'
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data
+  #   networks:
+  #     - userauthservices
+
+  # redis:
+  #   container_name: redis-userauthservices
+  #   image: redis:6.0
+  #   restart: always
+  #   env_file: .env
+  #   command: redis-server --requirepass ${REDIS_PASSWORD}
+  #   ports:
+  #     - '6379:6379'
+  #   volumes:
+  #     - redis_data:/data
+  #   networks:
+  #     - userauthservices
+
+  zookeeper:
+    container_name: zookeeper-gravity-core
+    image: confluentinc/cp-zookeeper:7.4.1
+    restart: always
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - '2181:2181'
+    volumes:
+      - zookeeper_data:/var/lib/zookeeper/data
+    networks:
+      - gravity-core
+
+  kafka:
+    container_name: kafka-gravity-core
+    image: confluentinc/cp-kafka:7.4.1
+    restart: always
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper-gravity-core:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-gravity-core:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    ports:
+      - '9092:9092'
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+    networks:
+      - gravity-core
+
+volumes:
+  # postgres_data:
+  # redis_data:
+  zookeeper_data:
+  kafka_data:
+
+networks:
+  gravity-core:
+    driver: bridge
